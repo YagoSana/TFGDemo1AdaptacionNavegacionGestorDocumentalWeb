@@ -3,16 +3,16 @@ import networkx as nx
 
 def imprimir_arbol_recursivo(grafo, nodo_actual, pagerank_dict, prefijo="", es_ultimo=True):
     
-    # 1. Encontrar los "hijos" (los predecesores)
+    # Obtener predecesores (hijos en el árbol invertido)
     try:
         hijos = list(grafo.predecessors(nodo_actual))
     except nx.NetworkXError:
         hijos = []
 
-    # 2. Ordenar los hijos por su valor de PageRank (descendente)
+    # Ordenar los hijos por su valor de PageRank (descendente)
     hijos_ordenados = sorted(hijos, key=lambda h: pagerank_dict.get(h, 0), reverse=True)
 
-    # 3. Iterar e imprimir recursivamente
+    # Iterar e imprimir recursivamente
     num_hijos = len(hijos_ordenados)
     for i, hijo in enumerate(hijos_ordenados):
         es_el_ultimo_hijo = (i == num_hijos - 1)
@@ -59,8 +59,6 @@ except FileNotFoundError:
     print(f"ERROR: No se encontró el archivo '{nombre_archivo}'.")
     sys.exit(1) # Salir si el archivo no existe
 
-
-
 print("Nodos del grafo:")
 print(G.nodes())
 print("Aristas del grafo:")
@@ -69,8 +67,6 @@ print(G.edges())
 # Aplicar algoritmo PageRank
 pagerank = nx.pagerank(G, alpha=0.85) #factor de amortiguamiento típico es 0.85
 print("PageRank de los nodos:")
-# Imprimir el diccionario
-#print(pagerank)
 
 # Ordenar los nodos por su valor de PageRank en forma de árbol descendente
 # Como suponemos conexo el grafo completo y representa un arbol de directorio, solo debe haber una raiz
@@ -79,10 +75,8 @@ nodos_raiz = [nodo for nodo in G.nodes() if G.out_degree(nodo) == 0]
 if not nodos_raiz:
     print("Advertencia: No se encontró un nodo raíz claro (out_degree == 0)")
 else:
-    # Ordenar también las raíces por su PageRank, por consistencia
-    nodos_raiz_ordenados = sorted(nodos_raiz, key=lambda n: pagerank.get(n, 0), reverse=True)
-
-    for raiz in nodos_raiz_ordenados:
+    # Solo hay una raiz pero por si hubiera casos excepcionales o errores, lo ponemos en un foreach que solo itera 1 vez
+    for raiz in nodos_raiz:
         rank_raiz = pagerank.get(raiz, 0)
         print(f"[{raiz}] (Rank: {rank_raiz:.5f})") 
         # Llamar a la función recursiva para sus hijos
